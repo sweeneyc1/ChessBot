@@ -8,6 +8,7 @@ Created on Tue Mar 15 18:38:14 2022
 import chess
 import chess.engine
 
+"""change these file paths to where stockfish is installed on your computer"""
 engine = chess.engine.SimpleEngine.popen_uci(r"C:\Users\barnettl\Downloads\stockfish\stockfish_14.1_win_x64_popcnt.exe")
 engine2 = chess.engine.SimpleEngine.popen_uci(r"C:\Users\barnettl\Downloads\stockfish\stockfish_14.1_win_x64_popcnt.exe")
 """print(engine.options)  
