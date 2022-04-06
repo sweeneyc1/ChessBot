@@ -20,10 +20,19 @@ class GameState():
         self.moveLog = []
 
     def makeMove(self, move):
-        self.board[move.startRow][move.startCol] = "--"
-        self.board[move.endRow][move.endCol] = move.pieceMoved
-        self.moveLog.append(move)
-        self.whiteToMove = not self.whiteToMove
+        print(move)
+        if self.whiteToMove: 
+                if self.board[move.startRow][move.startCol][0] == "w":
+                    self.board[move.startRow][move.startCol] = "--"
+                    self.board[move.endRow][move.endCol] = move.pieceMoved
+                    self.moveLog.append(move)
+                    self.whiteToMove = False
+        if self.whiteToMove == False: 
+                if self.board[move.startRow][move.startCol][0] == "b":
+                    self.board[move.startRow][move.startCol] = "--"
+                    self.board[move.endRow][move.endCol] = move.pieceMoved
+                    self.moveLog.append(move)
+                    self.whiteToMove = True
 
 class Move():
 
