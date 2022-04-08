@@ -37,6 +37,9 @@ def main():
     playerClicks = []
     while running:
         for e in p.event.get():
+            if chessgame.get_moves() == []:
+                print("Check & Mate")
+                running = False
             if e.type == p.QUIT:
                 running = False
             elif e.type == p.MOUSEBUTTONDOWN:
@@ -52,10 +55,10 @@ def main():
                     #here
                     rowRank = get_Row(row)
                     colRank = get_Col(col)
-                    rowColRank = rowRank+colRank
+                    rowColRank = colRank+rowRank
                     #print(rowColRank)
                     allmoves = chessgame.get_moves()
-                    posmoves = [x for x in allmoves if rowColRank in x]
+                    posmoves = [i for i in allmoves if i.startswith(rowColRank)]
                     print("All Posible moves for "+ rowColRank + " are: ")
                     print(posmoves)
                     
@@ -106,4 +109,6 @@ def get_Col(val):
     for key, value in filesToCols.items():
         if val == value:
             return key
+        
+
 main()
