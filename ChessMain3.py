@@ -5,6 +5,8 @@ Main Driver File. Responsible for User Input and displaying current GameState ob
 from Chessnut import Game
 import pygame as p
 import ChessEngine
+import chess
+import chess.engine
 
 WIDTH = HEIGHT = 512
 DIMENSION = 8
@@ -12,6 +14,7 @@ SQ_SIZE = HEIGHT//DIMENSION
 MAX_FPS = 15
 IMAGES = {}
 SCREEN = p.display.set_mode((WIDTH, HEIGHT))
+engine = chess.engine.SimpleEngine.popen_uci(r"stockfish\stockfish_14.1_win_x64_popcnt.exe")
 
 '''
 Initialize a global dictionary of images. Called only once to save resources.
@@ -27,6 +30,7 @@ Main Driver. Handle user input and updating graphics.
 '''
 def main():
     chessgame = Game()
+    board = chess.Board()
     p.init()
     SCREEN = p.display.set_mode((WIDTH, HEIGHT))
     clock = p.time.Clock()
@@ -53,15 +57,33 @@ def main():
                 if len(playerClicks) == 2:
                     move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
                     print(move.getChessNotation())
+                    print(playerClicks[0])
+                    print(playerClicks[1])
                     gs.makeMove(move, chessgame)
                     sqSelected = ()
                     playerClicks = []
+                    board.push_uci(move.getChessNotation())
+                    if not board.is_game_over():
+                        print(board)
+                        result = engine.play(board, chess.engine.Limit(time=0.1))
+                        cpuMove = result.move
+                        board.push(cpuMove)
+                        conv = moveConversion(cpuMove.__str__())
+                        move = ChessEngine.Move(conv[0],conv[1], gs.board)
+                        gs.makeMove(move, chessgame)
+                        
 
 
         drawGameState(SCREEN, gs)
         clock.tick(MAX_FPS)
         p.display.flip()
         p.display.set_caption('Chess Bot')
+        
+def moveConversion(move):
+    ranksToRows = {"1": 7, "2": 6, "3": 5, "4": 4, "5": 3, "6": 2, "7": 1, "8": 0}
+    filesToCols = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}
+    
+    return (ranksToRows[move[1]],filesToCols[move[0]]),(ranksToRows[move[3]],filesToCols[move[2]])
 
 #Used for all graphics for current game state
 def drawGameState(SCREEN, gs):
@@ -135,12 +157,15 @@ def button(msg,x,y,w,h,ic,ac):
         if click[0] == 1 and msg != None:
             if msg == "easy":
                 #set mode to easy
+                engine.configure({"UCI_Elo": 1350})
                 main()
             elif msg == "intermediate":
                 #set mode to intermediate
+                engine.configure({"UCI_Elo": 1800})
                 main()
             elif msg == "advanced":
                 #set mode to advanced
+                engine.configure({"UCI_Elo": 2500})
                 main()
 
     else:
