@@ -28,24 +28,28 @@ class GameState():
                         chessgame.apply_move(move.getChessNotation())
                     except:
                         print("Illegal Move Try Again")
+                        return False
                     else:
                         self.board[move.startRow][move.startCol] = "--"
                         self.board[move.endRow][move.endCol] = move.pieceMoved
                         self.moveLog.append(move)
                         self.whiteToMove = False
                         print("Black Turn")
+                        return True
         if self.whiteToMove == False: 
                 if self.board[move.startRow][move.startCol][0] == "b":
                     try:
                         chessgame.apply_move(move.getChessNotation())
                     except:
                         print("Illegal Move Try Again")
+                        return False
                     else:
                         self.board[move.startRow][move.startCol] = "--"
                         self.board[move.endRow][move.endCol] = move.pieceMoved
                         self.moveLog.append(move)
                         self.whiteToMove = True
                         print("White Turn")
+                        return True
 
 class Move():
 
