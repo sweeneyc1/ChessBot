@@ -59,11 +59,11 @@ def main():
                     print(move.getChessNotation())
                     print(playerClicks[0])
                     print(playerClicks[1])
-                    gs.makeMove(move, chessgame)
+                    valid = gs.makeMove(move, chessgame)
                     sqSelected = ()
                     playerClicks = []
-                    board.push_uci(move.getChessNotation())
-                    if not board.is_game_over():
+                    if not board.is_game_over() and valid:
+                        board.push_uci(move.getChessNotation())
                         print(board)
                         result = engine.play(board, chess.engine.Limit(time=0.1))
                         cpuMove = result.move
