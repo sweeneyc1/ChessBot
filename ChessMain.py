@@ -3,6 +3,7 @@ Main Driver File. Responsible for User Input and displaying current GameState ob
 """
 
 from Chessnut import Game
+from matplotlib.pyplot import pause
 import pygame as p
 import ChessEngine
 import chess
@@ -14,16 +15,14 @@ SQ_SIZE = HEIGHT//DIMENSION
 MAX_FPS = 15
 IMAGES = {}
 SCREEN = p.display.set_mode((WIDTH, HEIGHT))
-engine = chess.engine.SimpleEngine.popen_uci(r"C:\Users\couturep\Downloads\stockfish_14.1_win_x64\stockfish_14.1_win_x64\stockfish_14.1_win_x64.exe")
-
+engine = chess.engine.SimpleEngine.popen_uci(r"C:\Users\mpete\Downloads\stockfish_14.1_win_x64_popcnt\stockfish_14.1_win_x64_popcnt.exe")
 '''
 Initialize a global dictionary of images. Called only once to save resources.
 '''
 def loadImages():
     pieces = ['wp', 'wR', 'wN', 'wB', 'wK', 'wQ', 'bp', 'bR', 'bN', 'bB', 'bK', 'bQ']
     for piece in pieces:
-        IMAGES[piece] = p.transform.scale(p.image.load("Chess/chesspieces/images/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))
-    #access image by calling IMAGES['wp']
+            IMAGES[piece] = p.transform.scale(p.image.load("C:/Users/mpete/Documents/ChessBot/chesspieces/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))    #access image by calling IMAGES['wp']
 
 '''
 Main Driver. Handle user input and updating graphics.
@@ -40,6 +39,7 @@ def main():
     running = True
     sqSelected = ()
     playerClicks = []
+    pauseupdates = False
     while running:
         for e in p.event.get():
             if e.type == p.QUIT:
@@ -62,12 +62,17 @@ def main():
                     colRank = get_Col(col)
                     rowColRank = colRank+rowRank
                     allmoves = chessgame.get_moves()
-                    validMoves = [i for i in allmoves if i.startswith(rowColRank)]
-                    print("All Posible moves for "+ rowColRank + " are: ")
-                    print(validMoves)
-                    highlightSquares(SCREEN, gs, validMoves, sqSelected)
+                    if allmoves != []:
+                        pauseupdates = True
+                        validMoves = [i for i in allmoves if i.startswith(rowColRank)]
+                        print("All Posible moves for "+ rowColRank + " are: ")
+                        print(validMoves)
+                        for move in validMoves:
+                            highlightSquares(SCREEN, gs, move, sqSelected)
+                        
 
                 if len(playerClicks) == 2:
+                    pauseupdates = False
                     move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
                     #print(move.getChessNotation())
                     #print(playerClicks[0])
@@ -87,30 +92,23 @@ def main():
                         gs.makeMove(move, chessgame)
                         animateMove(gs.moveLog[-1], SCREEN, gs.board, clock)
 
-        drawGameState(SCREEN, gs)
+        if pauseupdates == False:
+            drawGameState(SCREEN, gs)
         clock.tick(MAX_FPS)
         p.display.flip()
         p.display.set_caption('Chess Bot')
 
 
 #Highlight piece and possible moves
-def highlightSquares(screen, gs, validMoves, sqSelected):
-    if sqSelected != ():
-        r, c = sqSelected
-        if gs.board[r][c][0] == ('w' if gs.whiteToMove else 'b'):
-            s = p.Surface((SQ_SIZE,SQ_SIZE))
-            s.set_alpha(100)
-            s.fill(p.Color('blue'))
-            screen.blit(s,(c*SQ_SIZE, r*SQ_SIZE))
-            s.fill(p.Color('yellow'))
-            '''
-            for move in validMoves:
+def highlightSquares(screen, gs, move, sqSelected):
                 print(move)
                 move=cordConversion(move)
                 print(move)
-                #screen.blit(s.Color('green'), (move[1]*SQ_SIZE, move[0]* SQ_SIZE))
-                #p.draw.rect(SCREEN, 'green', p.Rect(move[1]*SQ_SIZE,move[0]*SQ_SIZE, SQ_SIZE, SQ_SIZE))
-                '''
+                image = p.transform.scale(p.image.load("C:/Users/mpete/Documents/ChessBot/chesspieces/blue.png"), (SQ_SIZE, SQ_SIZE))
+                screen.blit(image, p.Rect(move[1]*SQ_SIZE,move[0]*SQ_SIZE, SQ_SIZE, SQ_SIZE))
+                p.display.update(move[1]*SQ_SIZE,move[0]*SQ_SIZE, SQ_SIZE, SQ_SIZE)
+                
+
 #Animate the moves
 def animateMove(move, screen, board, clock):
     global colors
