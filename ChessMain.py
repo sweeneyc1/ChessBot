@@ -14,7 +14,7 @@ SQ_SIZE = HEIGHT//DIMENSION
 MAX_FPS = 15
 IMAGES = {}
 SCREEN = p.display.set_mode((WIDTH, HEIGHT))
-engine = chess.engine.SimpleEngine.popen_uci(r"C:\Users\couturep\Downloads\stockfish_14.1_win_x64\stockfish_14.1_win_x64\stockfish_14.1_win_x64.exe")
+engine = chess.engine.SimpleEngine.popen_uci(r"C:\Users\mpete\Downloads\stockfish_14.1_win_x64_popcnt\stockfish_14.1_win_x64_popcnt.exe")
 
 '''
 Initialize a global dictionary of images. Called only once to save resources.
@@ -22,7 +22,7 @@ Initialize a global dictionary of images. Called only once to save resources.
 def loadImages():
     pieces = ['wp', 'wR', 'wN', 'wB', 'wK', 'wQ', 'bp', 'bR', 'bN', 'bB', 'bK', 'bQ']
     for piece in pieces:
-        IMAGES[piece] = p.transform.scale(p.image.load("Chess/chesspieces/images/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))
+        IMAGES[piece] = p.transform.scale(p.image.load("C:/Users/mpete/Documents/ChessBot/chesspieces/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))
     #access image by calling IMAGES['wp']
 
 '''
@@ -44,6 +44,8 @@ def main():
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
+            if board.is_game_over():
+                print("Check & Mate")                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                
             elif e.type == p.MOUSEBUTTONDOWN:
                 location = p.mouse.get_pos()
                 col = location[0]//SQ_SIZE
@@ -54,16 +56,27 @@ def main():
                 else:
                     sqSelected = (row,col)
                     playerClicks.append(sqSelected)
+                    #ValidMoveGeneration
+                if len(playerClicks) == 1:
+                    rowRank = get_Row(row)
+                    colRank = get_Col(col)
+                    rowColRank = colRank+rowRank
+                    allmoves = chessgame.get_moves()
+                    validMoves = [i for i in allmoves if i.startswith(rowColRank)]
+                    print("All Posible moves for "+ rowColRank + " are: ")
+                    print(validMoves)
+                    highlightSquares(SCREEN, gs, validMoves, sqSelected)
+                    
                 if len(playerClicks) == 2:
                     move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-                    print(move.getChessNotation())
-                    print(playerClicks[0])
-                    print(playerClicks[1])
-                    gs.makeMove(move, chessgame)
+                    #print(move.getChessNotation())
+                    #print(playerClicks[0])
+                    #print(playerClicks[1])
+                    valid = gs.makeMove(move, chessgame)
                     sqSelected = ()
                     playerClicks = []
-                    board.push_uci(move.getChessNotation())
-                    if not board.is_game_over():
+                    if not board.is_game_over() and valid:
+                        board.push_uci(move.getChessNotation())
                         print(board)
                         result = engine.play(board, chess.engine.Limit(time=0.1))
                         cpuMove = result.move
@@ -72,9 +85,7 @@ def main():
                         move = ChessEngine.Move(conv[0],conv[1], gs.board)
                         gs.makeMove(move, chessgame)
 
-
-
-        drawGameState(SCREEN, gs, validMoves, sqSelected)
+        drawGameState(SCREEN, gs)
         clock.tick(MAX_FPS)
         p.display.flip()
         p.display.set_caption('Chess Bot')
@@ -91,19 +102,20 @@ def highlightSquares(screen, gs, validMoves, sqSelected):
             screen.blit(s,(c*SQ_SIZE, r*SQ_SIZE))
             s.fill(p.Color('yellow'))
             for move in validMoves:
-                if move.startRow == r and move.startCol == c:
-                    screen.blit(s, (move.endCol*SQ_SIZE, move.endRow* SQ_SIZE))
-
-
+                print(move)
+                move=cordConversion(move)
+                print(move)
+                #screen.blit(s.Color('green'), (move[1]*SQ_SIZE, move[0]* SQ_SIZE))
+                #p.draw.rect(SCREEN, 'green', p.Rect(move[1]*SQ_SIZE,move[0]*SQ_SIZE, SQ_SIZE, SQ_SIZE))
 #Animate the moves
-def animateMove(move, screen, board, clock):
+""" def animateMove(move, screen, board, clock):
     global colors
     coords= []
     dR = move.endRow - move.startRow
     dC= move.endCol - move.startCol
     framesPerSquare = 10
     frameCount = (abs(dR) +abs(dC)) * framesPerSquare
-    for frame in range(frameCount+1):
+    for frame in range(frameCount+1): """
 
 
 def moveConversion(move):
@@ -112,11 +124,16 @@ def moveConversion(move):
 
     return (ranksToRows[move[1]],filesToCols[move[0]]),(ranksToRows[move[3]],filesToCols[move[2]])
 
+def cordConversion(move):
+    ranksToRows = {"1": 7, "2": 6, "3": 5, "4": 4, "5": 3, "6": 2, "7": 1, "8": 0}
+    filesToCols = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}
+
+    return (ranksToRows[move[3]],filesToCols[move[2]])
+
 #Used for all graphics for current game state
-def drawGameState(screen, gs, validMoves, sqSelected):
+def drawGameState(screen, gs):
     drawBoard(SCREEN)
     drawPieces(SCREEN, gs.board)
-    highlightSquares(screen, gs, validMoves, sqSelected)
 
 #to draw squares on board
 def drawBoard(SCREEN):
@@ -135,6 +152,18 @@ def drawPieces(SCREEN, board):
             piece = board[r][c]
             if piece != "--":
                 SCREEN.blit(IMAGES[piece], p.Rect(c*SQ_SIZE,r*SQ_SIZE, SQ_SIZE, SQ_SIZE))
+
+ranksToRows = {"1": 7, "2": 6, "3": 5, "4": 4, "5": 3, "6": 2, "7": 1, "8": 0}
+filesToCols = {"a": 0, "b": 1, "c": 2, "d": 3, "e": 4, "f": 5, "g": 6, "h": 7}
+def get_Row(val):
+    for key, value in ranksToRows.items():
+        if val == value:
+            return key
+        
+def get_Col(val):
+    for key, value in filesToCols.items():
+        if val == value:
+            return key
 
 # menu page for game intro
 def intro():
