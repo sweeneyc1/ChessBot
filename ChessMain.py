@@ -78,7 +78,8 @@ def main():
                     #print(playerClicks[0])
                     #print(playerClicks[1])
                     valid = gs.makeMove(move, chessgame)
-                    animateMove(gs.moveLog[-1], SCREEN, gs.board, clock)
+                    if gs.moveLog != []:
+                        animateMove(gs.moveLog[-1], SCREEN, gs.board, clock)
                     sqSelected = ()
                     playerClicks = []
                     if not board.is_game_over() and valid:
@@ -104,11 +105,12 @@ def highlightSquares(screen, gs, move, sqSelected):
                 print(move)
                 move=cordConversion(move)
                 print(move)
+
                 image = p.transform.scale(p.image.load("C:/Users/mpete/Documents/ChessBot/chesspieces/blue.png"), (SQ_SIZE, SQ_SIZE))
+                image.set_alpha(128)
                 screen.blit(image, p.Rect(move[1]*SQ_SIZE,move[0]*SQ_SIZE, SQ_SIZE, SQ_SIZE))
                 p.display.update(move[1]*SQ_SIZE,move[0]*SQ_SIZE, SQ_SIZE, SQ_SIZE)
                 
-
 #Animate the moves
 def animateMove(move, screen, board, clock):
     global colors
